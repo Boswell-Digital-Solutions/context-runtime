@@ -1,4 +1,4 @@
-## 30. Dependencies
+# §6 — Dependencies
 
 ### Primary technical dependencies
 

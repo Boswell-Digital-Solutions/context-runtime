@@ -1,4 +1,4 @@
-## 40. Validation and Proof
+# §10 — Validation & Proof
 
 Validation is evidence-based and fail-closed.
 

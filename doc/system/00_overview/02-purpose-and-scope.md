@@ -1,4 +1,4 @@
-## 01. Purpose and Scope
+# §2 — Purpose & Scope
 
 `context-runtime` turns a code target (repo + file) into a **governed context
 bundle** the self-healing AI shaper can build a fix from, safely.

@@ -1,4 +1,4 @@
-## 10. Contract Surface
+# §4 — Contract Surface
 
 ### HTTP API
 

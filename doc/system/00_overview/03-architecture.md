@@ -1,4 +1,4 @@
-## 02. Architecture Overview
+# §3 — Architecture Overview
 
 A thin axum service over a pure assembly pipeline.
 

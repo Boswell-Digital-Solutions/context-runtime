@@ -1,4 +1,4 @@
-## 00. Identity
+# §1 — Identity & Philosophy
 
 **Repo:** `context-runtime`
 **Proposed Designation:** `CTX`

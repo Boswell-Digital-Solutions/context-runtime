@@ -1,4 +1,4 @@
-## 20. Versioning and Slice Progression
+# §5 — Versioning & Slice Progression
 
 This repo advances through bounded slices, fail-closed.
 

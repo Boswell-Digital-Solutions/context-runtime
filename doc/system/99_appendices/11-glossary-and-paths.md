@@ -1,4 +1,4 @@
-## 99. Appendices — Glossary and Paths
+# §11 — Glossary & Paths
 
 ### Important paths
 
