@@ -15,6 +15,7 @@ pub mod error;
 pub mod gather;
 pub mod http;
 pub mod payload;
+pub mod scene;
 pub mod store;
 
 pub use precomputed_context_core as pcc;
