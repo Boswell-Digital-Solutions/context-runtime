@@ -1,4 +1,9 @@
-# context-runtime (CTX)
+# bds · context-runtime (CTX)
+
+> **System identity — bds family (Boswell Digital Solutions business system, local-systems tier).**
+> The PCC-conforming context runtime for the self-healing loop; a business/backend local system in the Forge **ecosystem backend**, part of `ecosystem/local-systems`.
+> **Purpose:** turn a code target (repo + file) into a governed context bundle — admissibility, freshness, authority, deterministic bundle hash — that the AI shaper can build a fix from, safely.
+> **Not the Forge counterpart:** the public-app support boundary is `apps/public-app-local-support/precomputed-context-core` (Forge family).
 
 The PCC-conforming **context runtime** for the self-healing loop. Turns a code
 target (repo + file) into a governed context bundle the AI shaper can build a fix
