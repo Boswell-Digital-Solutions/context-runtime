@@ -3,7 +3,15 @@
 ### HTTP API
 
 - `GET /healthz` → `{ ok, service, contract, envelope, payload_contracts[],
-  scene_assemble{ endpoint, task_family, payload_contracts[] } }`.
+  scene_assemble{ endpoint, task_family, payload_contracts[] }, discovery }`.
+  The additive `discovery` object follows `schemas/discovery.v1.schema.json`:
+  runtime and PCC repository identities, full build-source commits, source
+  states, and a sorted six-file contract manifest of byte lengths and SHA-256
+  values. It explicitly declares `trust: self_reported`. The metadata is
+  captured at build time; `/healthz` does not run Git or read the workspace.
+  A matching response does not attest the process, prove live contract behavior,
+  authorize a trial, or confer an approval/healthy-now/deployed state. Missing
+  or unknown provenance remains visible instead of being synthesized.
 - `POST /v1/context/assemble` (code-fix path)
   - request: `{ repo_id, repo_root, target_file, task_intent_id?, task_family?,
     task_version?, max_source_age_minutes?, override_posture? }`

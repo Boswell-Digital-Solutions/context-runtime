@@ -38,6 +38,9 @@ pub fn router(state: AppState) -> Router {
 }
 
 async fn healthz() -> Json<serde_json::Value> {
+    let discovery: serde_json::Value =
+        serde_json::from_str(include_str!(concat!(env!("OUT_DIR"), "/discovery.json")))
+            .expect("build generated valid discovery metadata");
     Json(serde_json::json!({
         "ok": true,
         "service": "context-runtime",
@@ -52,7 +55,8 @@ async fn healthz() -> Json<serde_json::Value> {
             "endpoint": "/v1/context/assemble-scenes",
             "task_family": "continuity",
             "payload_contracts": ["scene_text"]
-        }
+        },
+        "discovery": discovery
     }))
 }
 

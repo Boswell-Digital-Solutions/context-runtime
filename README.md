@@ -50,3 +50,10 @@ cargo test --offline
 No LLM, no persistence, no verification, no proposals. It governs and serves
 context. PCC owns contract shape; DataForge-Local owns durable truth; pact
 verifies; forgeHQ proposes.
+
+## Build discovery metadata
+
+`GET /healthz` includes versioned, self-reported build metadata for the
+context-runtime and its PCC source dependency, plus hashes of the selected
+contract files. It is a declaration for operator preflight, not process
+attestation or trial authority. See `doc/system/04-contract-surface.md`.

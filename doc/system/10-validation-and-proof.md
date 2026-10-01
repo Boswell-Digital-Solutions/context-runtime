@@ -22,7 +22,11 @@ Validation is evidence-based and fail-closed.
 - assembles cleanly against a real forgeHQ source file when present
 
 `tests/http.rs`: boots the real axum server on an ephemeral port; assemble →
-fetch payload → scope-escape 409 → unknown-bundle 404.
+fetch payload → scope-escape 409 → unknown-bundle 404. The same health request
+checks versioned self-reported build metadata and the exact six-file manifest.
+The build script watches runtime source files, selected PCC schema files, and
+Git HEAD/ref/index paths so a changed source revision or contract file causes
+the embedded declaration to regenerate on the next Cargo build.
 
 `scripts/smoke_crossing.py`: stdlib-only client (run from a project venv) that
 drives the running service exactly as forgeHQ will — proves the Rust↔Python

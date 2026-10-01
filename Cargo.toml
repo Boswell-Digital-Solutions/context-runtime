@@ -34,3 +34,7 @@ precomputed-context-core = { path = "../../precomputed-context-core" }
 
 [dev-dependencies]
 reqwest = { version = "0.12", features = ["json"] }
+
+[build-dependencies]
+serde_json = "1"
+sha2 = "0.10"

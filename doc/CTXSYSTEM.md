@@ -143,7 +143,15 @@ wire output is refs + a hash + typed payloads.
 ### HTTP API
 
 - `GET /healthz` → `{ ok, service, contract, envelope, payload_contracts[],
-  scene_assemble{ endpoint, task_family, payload_contracts[] } }`.
+  scene_assemble{ endpoint, task_family, payload_contracts[] }, discovery }`.
+  The additive `discovery` object follows `schemas/discovery.v1.schema.json`:
+  runtime and PCC repository identities, full build-source commits, source
+  states, and a sorted six-file contract manifest of byte lengths and SHA-256
+  values. It explicitly declares `trust: self_reported`. The metadata is
+  captured at build time; `/healthz` does not run Git or read the workspace.
+  A matching response does not attest the process, prove live contract behavior,
+  authorize a trial, or confer an approval/healthy-now/deployed state. Missing
+  or unknown provenance remains visible instead of being synthesized.
 - `POST /v1/context/assemble` (code-fix path)
   - request: `{ repo_id, repo_root, target_file, task_intent_id?, task_family?,
     task_version?, max_source_age_minutes?, override_posture? }`
@@ -214,6 +222,11 @@ C1 = "governed bundle over HTTP + Rust↔Python crossing", Option 3:
 
 ### Planned
 
+An additive read-only discovery metadata surface is delivered after the C1 PCC
+compatibility repair. It exposes build declarations for downstream operator
+preflight while preserving the original `/healthz` fields and C1 assembly paths.
+It is not C2 gathering, C4 PACT verification, or a running-process attestation.
+
 - **C2** — richer gathering (import-aware adjacency, multiple key files,
   per-source authority levels) and DataForge-Local persistence + replay of
   bundles.
@@ -236,6 +249,9 @@ C1 = "governed bundle over HTTP + Rust↔Python crossing", Option 3:
   `Forge_Command/api`).
 - `serde` / `serde_json` — request/response and contract serialization.
 - `sha2` 0.10 — payload content integrity hashes.
+- Build-only `sha2` 0.10 and `serde_json` 1 — hash and serialize the embedded
+  discovery manifest. The build invokes local Git for revision/status evidence;
+  the running service does not depend on Git for health requests.
 - `chrono` 0.4 — artifact record timestamps.
 - `thiserror` 2, `tracing` / `tracing-subscriber` — errors and logging.
 - dev: `reqwest` 0.12 — HTTP test client.
@@ -475,7 +491,11 @@ Validation is evidence-based and fail-closed.
 - assembles cleanly against a real forgeHQ source file when present
 
 `tests/http.rs`: boots the real axum server on an ephemeral port; assemble →
-fetch payload → scope-escape 409 → unknown-bundle 404.
+fetch payload → scope-escape 409 → unknown-bundle 404. The same health request
+checks versioned self-reported build metadata and the exact six-file manifest.
+The build script watches runtime source files, selected PCC schema files, and
+Git HEAD/ref/index paths so a changed source revision or contract file causes
+the embedded declaration to regenerate on the next Cargo build.
 
 `scripts/smoke_crossing.py`: stdlib-only client (run from a project venv) that
 drives the running service exactly as forgeHQ will — proves the Rust↔Python
