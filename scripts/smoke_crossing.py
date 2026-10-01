@@ -65,8 +65,14 @@ def main():
     assert status == 200, f"assemble failed: {status} {bundle}"
     bundle_id = bundle["context_bundle_id"]
     refs = bundle["context_item_refs"]
-    assert bundle_id.startswith("ctxb_"), bundle_id
-    assert bundle["bundle_hash"], "missing bundle_hash"
+    digest = bundle["bundle_hash"]
+    assert len(digest) == 64 and all(c in "0123456789abcdef" for c in digest), digest
+    assert bundle_id == f"ctxb.sha256.{digest}", bundle_id
+    manifest = bundle["manifest"]
+    assert manifest["context_bundle_id"] == bundle_id
+    assert manifest["bundle_hash"] == digest
+    assert manifest["legacy_context_bundle_id"] == f"ctxb_{manifest['legacy_bundle_hash']}"
+    assert len(manifest["legacy_bundle_hash"]) == 16
     assert bundle["task_intent_id"], "missing task_intent_id (needed for pact connectivity)"
     assert refs, "no admitted refs"
     print(

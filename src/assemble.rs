@@ -75,6 +75,8 @@ fn to_source_input(source: &GatheredSource) -> pcc::SourceInput {
         age_minutes: source.age_minutes,
         authority_state: pcc::AuthorityState::Accepted,
         is_override: false,
+        // These sources are not governed-memory facts.
+        provenance: None,
     }
 }
 
@@ -118,9 +120,7 @@ pub fn assemble(params: &AssembleParams, now: SystemTime) -> Result<AssembledBun
             pcc::SourceClass::AcceptedLoreRecord,
             pcc::SourceClass::AcceptedStyleRuleRecord,
         ],
-        freshness_policy: pcc::FreshnessPolicy {
-            max_source_age_minutes: params.max_source_age_minutes,
-        },
+        freshness_policy: pcc::FreshnessPolicy::uniform(params.max_source_age_minutes),
         override_posture: params.override_posture.clone(),
         sources: gathered.sources.iter().map(to_source_input).collect(),
     };

@@ -1,6 +1,8 @@
 //! Scene-assemble HTTP test: mints a governed two-scene continuity bundle over
 //! the real axum server — the path AuthorForge uses to obtain a lineage triple.
 
+mod identity;
+
 use context_runtime::config::Config;
 use context_runtime::http::{AppState, router};
 use context_runtime::store::BundleStore;
@@ -55,9 +57,11 @@ async fn assemble_scenes_mints_lineage_triple_and_serves_scene_payloads() {
     assert!(resp.status().is_success(), "assemble-scenes status {}", resp.status());
     let v: serde_json::Value = resp.json().await.unwrap();
 
+    identity::assert_pcc_identity(&v);
+
     // The lineage triple AuthorForge threads into continuity_check.
     let bundle_id = v["context_bundle_id"].as_str().unwrap().to_string();
-    assert!(bundle_id.starts_with("ctxb_"), "bundle id {bundle_id}");
+    assert!(bundle_id.starts_with("ctxb.sha256."), "bundle id {bundle_id}");
     assert!(
         v["task_intent_id"].as_str().unwrap().starts_with("ti_continuity_"),
         "intent {}",

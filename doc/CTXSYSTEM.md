@@ -147,7 +147,7 @@ wire output is refs + a hash + typed payloads.
 - `POST /v1/context/assemble` (code-fix path)
   - request: `{ repo_id, repo_root, target_file, task_intent_id?, task_family?,
     task_version?, max_source_age_minutes?, override_posture? }`
-  - response: `{ context_bundle_id, bundle_hash, manifest, payload_refs,
+  - response: `{ task_intent_id, context_bundle_id, bundle_hash, manifest, payload_refs,
     context_item_refs }` where `manifest` is PCC's `ContextBundleManifest`
     verbatim and `context_item_refs == payload_refs` (the forgeHQ seam).
 - `POST /v1/context/assemble-scenes` (continuity / scene path)
@@ -181,6 +181,20 @@ wire output is refs + a hash + typed payloads.
 `context-runtime` is a runtime *against* PCC's contracts. PCC is the authority
 for contract shape; this repo never redefines a contract — it gathers, governs,
 and serves.
+
+### PCC compatibility (2026-10-01)
+
+Both assembly paths use PCC's uniform freshness policy, without per-class
+exceptions. Existing code and scene sources have no governed-memory provenance;
+the runtime does not admit governed-memory sources in these paths.
+
+The primary identity is PCC's `ctxb.sha256.<64 lowercase hex>` bundle ID and
+64-character SHA-256 `bundle_hash`. The manifest also carries PCC's
+`legacy_context_bundle_id` (`ctxb_<16 hex>`) and `legacy_bundle_hash` for
+migration reference. HTTP responses pass the manifest through verbatim; payload
+lookup uses the primary ID, with no legacy-ID alias. Consumers must treat IDs as
+opaque and retain the returned ID/hash pair. PCC owns its canonical hash input;
+this identity is not a claim of RFC 8785 canonical JSON hashing.
 
 ---
 
@@ -231,6 +245,14 @@ C1 = "governed bundle over HTTP + Rust↔Python crossing", Option 3:
 Dependencies are accepted only when they support the runtime, the real PCC
 contracts, deterministic hashing, or fail-closed serving. No persistence or LLM
 dependency in C1.
+
+### Compatibility verification snapshot — 2026-10-01
+
+The path dependency was verified against PCC revision
+`b0071c01e8275800c698ef57452dd13443637459` (optional source provenance,
+uniform/per-class freshness policy, tagged SHA-256 bundle identity). This is a
+verification revision, not an immutable dependency pin: Cargo resolves the local
+path checkout. Re-run the runtime tests after changing that checkout.
 
 ---
 
@@ -467,6 +489,15 @@ cargo test --offline
 CONTEXT_RUNTIME_BIND=127.0.0.1:8011 ./target/debug/context-runtime &
 <venv>/bin/python scripts/smoke_crossing.py http://127.0.0.1:8011
 ```
+
+### PCC compatibility regression coverage
+
+Both HTTP assembly tests validate the native tagged ID/hash pair, PCC manifest
+deserialization, legacy identity retention, admitted-ref equality, and absence of
+memory provenance. The existing stale-source and determinism tests cover the
+uniform policy; payload fetches exercise tagged IDs through the real router and
+store. The Python crossing smoke checks the same primary and legacy identities.
+See `reports/pcc-compatibility-2026-10-01.md` for the measured verification result.
 
 ---
 

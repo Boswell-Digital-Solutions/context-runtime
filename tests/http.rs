@@ -2,6 +2,7 @@
 //! drives it with an HTTP client — the same path forgeHQ will use.
 
 mod common;
+mod identity;
 
 use common::TempRepo;
 use context_runtime::config::Config;
@@ -49,7 +50,8 @@ async fn http_assemble_fetch_payload_and_scope_escape() {
     assert!(resp.status().is_success(), "assemble status {}", resp.status());
     let v: serde_json::Value = resp.json().await.unwrap();
     let bundle_id = v["context_bundle_id"].as_str().unwrap().to_string();
-    assert!(bundle_id.starts_with("ctxb_"));
+    assert!(bundle_id.starts_with("ctxb.sha256."));
+    identity::assert_pcc_identity(&v);
     // task_intent_id is echoed so the chain (context → pact verify) shares it.
     assert!(v["task_intent_id"].as_str().unwrap().starts_with("ti_codefix_"));
     let refs = v["context_item_refs"].as_array().unwrap();
