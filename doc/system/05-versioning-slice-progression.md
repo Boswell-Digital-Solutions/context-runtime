@@ -14,6 +14,11 @@ C1 = "governed bundle over HTTP + Rust↔Python crossing", Option 3:
 
 ### Planned
 
+An additive read-only discovery metadata surface is delivered after the C1 PCC
+compatibility repair. It exposes build declarations for downstream operator
+preflight while preserving the original `/healthz` fields and C1 assembly paths.
+It is not C2 gathering, C4 PACT verification, or a running-process attestation.
+
 - **C2** — richer gathering (import-aware adjacency, multiple key files,
   per-source authority levels) and DataForge-Local persistence + replay of
   bundles.

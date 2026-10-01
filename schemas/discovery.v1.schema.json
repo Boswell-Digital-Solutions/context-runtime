@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bds:context-runtime:discovery:v1",
+  "title": "context-runtime build discovery metadata v1",
+  "description": "Self-reported build metadata. A match does not attest the running process or authorize a trial.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "trust", "runtime", "pcc", "contracts"],
+  "properties": {
+    "schema": { "const": "bds.context-runtime.discovery.v1" },
+    "trust": { "const": "self_reported" },
+    "runtime": { "$ref": "#/$defs/source" },
+    "pcc": { "$ref": "#/$defs/source" },
+    "contracts": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": { "$ref": "#/$defs/contract" }
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit", "source_state"],
+      "properties": {
+        "repository": { "enum": ["Boswell-Digital-Solutions/context-runtime", "Boswell-Digital-Solutions/precomputed-context-core"] },
+        "commit": { "oneOf": [{ "type": "null" }, { "type": "string", "pattern": "^[0-9a-f]{40}$" }] },
+        "source_state": { "enum": ["clean", "dirty", "unknown"] }
+      }
+    },
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "path", "bytes", "sha256"],
+      "properties": {
+        "repository": { "enum": ["Boswell-Digital-Solutions/context-runtime", "Boswell-Digital-Solutions/precomputed-context-core"] },
+        "path": { "type": "string", "minLength": 1 },
+        "bytes": { "type": "integer", "minimum": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

@@ -8,6 +8,9 @@
   `Forge_Command/api`).
 - `serde` / `serde_json` — request/response and contract serialization.
 - `sha2` 0.10 — payload content integrity hashes.
+- Build-only `sha2` 0.10 and `serde_json` 1 — hash and serialize the embedded
+  discovery manifest. The build invokes local Git for revision/status evidence;
+  the running service does not depend on Git for health requests.
 - `chrono` 0.4 — artifact record timestamps.
 - `thiserror` 2, `tracing` / `tracing-subscriber` — errors and logging.
 - dev: `reqwest` 0.12 — HTTP test client.
