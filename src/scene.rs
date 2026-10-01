@@ -63,6 +63,8 @@ fn scene_source(payload_ref: String, source_class: pcc::SourceClass) -> pcc::Sou
         age_minutes: 0,
         authority_state: pcc::AuthorityState::Accepted,
         is_override: false,
+        // These sources are not governed-memory facts.
+        provenance: None,
     }
 }
 
@@ -125,9 +127,7 @@ pub fn assemble_scenes(params: &SceneAssembleParams) -> Result<AssembledBundle> 
             pcc::SourceClass::ActiveScene,
             pcc::SourceClass::AdjacentSceneSummaryOrClippedBody,
         ],
-        freshness_policy: pcc::FreshnessPolicy {
-            max_source_age_minutes: params.max_source_age_minutes,
-        },
+        freshness_policy: pcc::FreshnessPolicy::uniform(params.max_source_age_minutes),
         // Scenes never override accepted style rules in this path.
         override_posture: pcc::OverridePosture::DisallowAll,
         sources,

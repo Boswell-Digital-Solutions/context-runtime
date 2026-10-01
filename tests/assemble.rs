@@ -31,7 +31,7 @@ fn assembles_governed_bundle_with_code_native_payloads() {
     let out = assemble(&params(repo.root.clone(), 100_000), now).expect("assembly should succeed");
 
     // Envelope is the real PCC manifest.
-    assert!(out.manifest.context_bundle_id.starts_with("ctxb_"));
+    assert!(out.manifest.context_bundle_id.starts_with("ctxb.sha256."));
     assert!(!out.manifest.bundle_hash.is_empty());
     assert_eq!(out.manifest.replay_eligibility, pcc::ReplayEligibility::Eligible);
     assert!(!out.manifest.authority_conflict_flag);

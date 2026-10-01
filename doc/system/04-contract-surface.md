@@ -7,7 +7,7 @@
 - `POST /v1/context/assemble` (code-fix path)
   - request: `{ repo_id, repo_root, target_file, task_intent_id?, task_family?,
     task_version?, max_source_age_minutes?, override_posture? }`
-  - response: `{ context_bundle_id, bundle_hash, manifest, payload_refs,
+  - response: `{ task_intent_id, context_bundle_id, bundle_hash, manifest, payload_refs,
     context_item_refs }` where `manifest` is PCC's `ContextBundleManifest`
     verbatim and `context_item_refs == payload_refs` (the forgeHQ seam).
 - `POST /v1/context/assemble-scenes` (continuity / scene path)
@@ -41,3 +41,17 @@
 `context-runtime` is a runtime *against* PCC's contracts. PCC is the authority
 for contract shape; this repo never redefines a contract — it gathers, governs,
 and serves.
+
+### PCC compatibility (2026-10-01)
+
+Both assembly paths use PCC's uniform freshness policy, without per-class
+exceptions. Existing code and scene sources have no governed-memory provenance;
+the runtime does not admit governed-memory sources in these paths.
+
+The primary identity is PCC's `ctxb.sha256.<64 lowercase hex>` bundle ID and
+64-character SHA-256 `bundle_hash`. The manifest also carries PCC's
+`legacy_context_bundle_id` (`ctxb_<16 hex>`) and `legacy_bundle_hash` for
+migration reference. HTTP responses pass the manifest through verbatim; payload
+lookup uses the primary ID, with no legacy-ID alias. Consumers must treat IDs as
+opaque and retain the returned ID/hash pair. PCC owns its canonical hash input;
+this identity is not a claim of RFC 8785 canonical JSON hashing.

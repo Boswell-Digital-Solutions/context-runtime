@@ -36,3 +36,12 @@ cargo test --offline
 CONTEXT_RUNTIME_BIND=127.0.0.1:8011 ./target/debug/context-runtime &
 <venv>/bin/python scripts/smoke_crossing.py http://127.0.0.1:8011
 ```
+
+### PCC compatibility regression coverage
+
+Both HTTP assembly tests validate the native tagged ID/hash pair, PCC manifest
+deserialization, legacy identity retention, admitted-ref equality, and absence of
+memory provenance. The existing stale-source and determinism tests cover the
+uniform policy; payload fetches exercise tagged IDs through the real router and
+store. The Python crossing smoke checks the same primary and legacy identities.
+See `reports/pcc-compatibility-2026-10-01.md` for the measured verification result.

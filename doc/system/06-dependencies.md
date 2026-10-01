@@ -17,3 +17,11 @@
 Dependencies are accepted only when they support the runtime, the real PCC
 contracts, deterministic hashing, or fail-closed serving. No persistence or LLM
 dependency in C1.
+
+### Compatibility verification snapshot — 2026-10-01
+
+The path dependency was verified against PCC revision
+`b0071c01e8275800c698ef57452dd13443637459` (optional source provenance,
+uniform/per-class freshness policy, tagged SHA-256 bundle identity). This is a
+verification revision, not an immutable dependency pin: Cargo resolves the local
+path checkout. Re-run the runtime tests after changing that checkout.
