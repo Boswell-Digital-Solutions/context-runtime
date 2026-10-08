@@ -204,6 +204,16 @@ lookup uses the primary ID, with no legacy-ID alias. Consumers must treat IDs as
 opaque and retain the returned ID/hash pair. PCC owns its canonical hash input;
 this identity is not a claim of RFC 8785 canonical JSON hashing.
 
+## Source containment (2026-10-08)
+
+Target paths must be relative and cannot contain parent or root components.
+Gathering canonicalizes the selected repository and every target, adjacent and
+document source before reading; a resolved source outside the repository is
+rejected. Sources must be regular UTF-8 files of at most 2 MiB, including files
+that grow during reading. This boundary checks containment within the supplied
+repository; it does not turn a caller-supplied repository root into a registry
+authorization claim. The local operator chooses that root.
+
 ---
 
 # §5 — Versioning & Slice Progression

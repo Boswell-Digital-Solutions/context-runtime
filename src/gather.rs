@@ -6,7 +6,8 @@
 //! mutates the repo — it is the safe-by-design intake stage.
 
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::io::Read;
+use std::path::{Component, Path, PathBuf};
 use std::time::SystemTime;
 
 use crate::error::{ContextError, Result};
@@ -98,20 +99,67 @@ fn age_minutes(now: SystemTime, mtime: SystemTime) -> u64 {
         .unwrap_or(0)
 }
 
-fn read_text(path: &Path) -> Result<(String, SystemTime)> {
-    let content = fs::read_to_string(path).map_err(|e| ContextError::Io(format!("{}: {e}", path.display())))?;
-    let mtime = fs::metadata(path)
-        .and_then(|m| m.modified())
+/// Resolve every source under the canonical repository before reading bytes.
+fn contained_path(root: &Path, path: &Path) -> Result<PathBuf> {
+    let resolved = path
+        .canonicalize()
         .map_err(|e| ContextError::Io(format!("{}: {e}", path.display())))?;
+    if !resolved.starts_with(root) {
+        return Err(ContextError::BadRequest(
+            "source escapes repository root".into(),
+        ));
+    }
+    Ok(resolved)
+}
+
+fn read_text(root: &Path, path: &Path) -> Result<(String, SystemTime)> {
+    const MAX_SOURCE_BYTES: u64 = 2 * 1024 * 1024;
+    let resolved = contained_path(root, path)?;
+    let file = fs::File::open(&resolved).map_err(|e| ContextError::Io(e.to_string()))?;
+    let metadata = file
+        .metadata()
+        .map_err(|e| ContextError::Io(e.to_string()))?;
+    if !metadata.is_file() || metadata.len() > MAX_SOURCE_BYTES {
+        return Err(ContextError::BadRequest(
+            "source must be a regular file of at most 2 MiB".into(),
+        ));
+    }
+    let mut content = String::new();
+    file.take(MAX_SOURCE_BYTES + 1)
+        .read_to_string(&mut content)
+        .map_err(|e| ContextError::Io(e.to_string()))?;
+    if content.len() as u64 > MAX_SOURCE_BYTES {
+        return Err(ContextError::BadRequest("source exceeds 2 MiB".into()));
+    }
+    let mtime = metadata
+        .modified()
+        .map_err(|e| ContextError::Io(e.to_string()))?;
     Ok((content, mtime))
 }
 
 /// Gather the governed sources + repo facts for `target_rel` under `repo_root`.
-pub fn gather(repo_id: &str, repo_root: &Path, target_rel: &str, now: SystemTime) -> Result<GatherResult> {
+pub fn gather(
+    repo_id: &str,
+    repo_root: &Path,
+    target_rel: &str,
+    now: SystemTime,
+) -> Result<GatherResult> {
     if !repo_root.is_dir() {
         return Err(ContextError::RepoNotFound(repo_root.display().to_string()));
     }
-    let target_rel = target_rel.trim_start_matches('/').to_string();
+    let root = repo_root
+        .canonicalize()
+        .map_err(|e| ContextError::Io(e.to_string()))?;
+    let repo_root = root.as_path();
+    if Path::new(target_rel)
+        .components()
+        .any(|part| !matches!(part, Component::Normal(_)))
+    {
+        return Err(ContextError::BadRequest(
+            "target_file must be a relative path without traversal".into(),
+        ));
+    }
+    let target_rel = target_rel.to_string();
     if target_rel.is_empty() {
         return Err(ContextError::BadRequest("target_file is required".into()));
     }
@@ -123,7 +171,7 @@ pub fn gather(repo_id: &str, repo_root: &Path, target_rel: &str, now: SystemTime
     let mut sources: Vec<GatheredSource> = Vec::new();
 
     // (1) Target file — ActiveScene.
-    let (target_content, target_mtime) = read_text(&target_abs)?;
+    let (target_content, target_mtime) = read_text(repo_root, &target_abs)?;
     sources.push(GatheredSource {
         role: SourceRole::Target,
         payload_ref: file_ref(repo_id, &target_rel),
@@ -146,7 +194,7 @@ pub fn gather(repo_id: &str, repo_root: &Path, target_rel: &str, now: SystemTime
     // (3) Canonical repo-truth doc — AcceptedLoreRecord / RepoNavigationMap.
     let canonical_doc = find_canonical_doc(repo_root);
     if let Some(doc_rel) = &canonical_doc {
-        let (doc_content, doc_mtime) = read_text(&repo_root.join(doc_rel))?;
+        let (doc_content, doc_mtime) = read_text(repo_root, &repo_root.join(doc_rel))?;
         sources.push(GatheredSource {
             role: SourceRole::RepoTruth,
             payload_ref: format!("doc://{repo_id}/{doc_rel}"),
@@ -181,14 +229,23 @@ pub fn gather(repo_id: &str, repo_root: &Path, target_rel: &str, now: SystemTime
     })
 }
 
-fn find_adjacent(repo_root: &Path, target_rel: &str) -> Result<Option<(String, String, SystemTime)>> {
+fn find_adjacent(
+    repo_root: &Path,
+    target_rel: &str,
+) -> Result<Option<(String, String, SystemTime)>> {
     let target_abs = repo_root.join(target_rel);
     let dir = match target_abs.parent() {
         Some(d) => d.to_path_buf(),
         None => return Ok(None),
     };
-    let target_ext = target_abs.extension().and_then(|e| e.to_str()).unwrap_or("");
-    let target_name = target_abs.file_name().and_then(|n| n.to_str()).unwrap_or("");
+    let target_ext = target_abs
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("");
+    let target_name = target_abs
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("");
 
     let mut candidates: Vec<String> = Vec::new();
     let entries = match fs::read_dir(&dir) {
@@ -222,7 +279,7 @@ fn find_adjacent(repo_root: &Path, target_rel: &str) -> Result<Option<(String, S
         .strip_prefix(repo_root)
         .map(|p| p.to_string_lossy().replace('\\', "/"))
         .unwrap_or(name);
-    let (content, mtime) = read_text(&adj_abs)?;
+    let (content, mtime) = read_text(repo_root, &adj_abs)?;
     Ok(Some((rel, content, mtime)))
 }
 
@@ -284,7 +341,11 @@ fn detect_repo_facts(repo_root: &Path, target_rel: &str, canonical_doc: Option<&
             vec!["Cargo.toml".into()],
             vec!["cargo build".into(), "cargo test".into()],
             (
-                vec!["cargo fmt --check".into(), "cargo clippy".into(), "cargo test".into()],
+                vec![
+                    "cargo fmt --check".into(),
+                    "cargo clippy".into(),
+                    "cargo test".into(),
+                ],
                 vec!["fmt".into(), "clippy".into(), "test".into()],
                 vec!["clippy reports no warnings".into(), "all tests pass".into()],
                 vec!["rust toolchain (cargo) on PATH".into()],
@@ -329,7 +390,14 @@ fn detect_repo_facts(repo_root: &Path, target_rel: &str, canonical_doc: Option<&
     };
 
     // Add discovered entry points common across stacks.
-    for ep in ["app", "src", "main.py", "app/__init__.py", "src/main.rs", "src/lib.rs"] {
+    for ep in [
+        "app",
+        "src",
+        "main.py",
+        "app/__init__.py",
+        "src/main.rs",
+        "src/lib.rs",
+    ] {
         if has(ep) {
             entry_points.push(ep.to_string());
         }
@@ -352,8 +420,12 @@ fn detect_repo_facts(repo_root: &Path, target_rel: &str, canonical_doc: Option<&
         primary_directories.push(".".to_string());
     }
 
-    let (validation_commands, validation_execution_order, validation_pass_conditions, validation_env_requirements) =
-        validation;
+    let (
+        validation_commands,
+        validation_execution_order,
+        validation_pass_conditions,
+        validation_env_requirements,
+    ) = validation;
 
     RepoFacts {
         stack,
