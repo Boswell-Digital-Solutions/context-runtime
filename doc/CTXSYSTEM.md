@@ -49,7 +49,7 @@ bash doc/system/BUILD.sh
 
 # §1 — Identity & Philosophy
 
-> **System identity — bds family (Boswell Digital Solutions business system, local-systems tier).** This service is part of the Forge ecosystem backend in `ecosystem/local-systems`. It is **not** the Forge counterpart `apps/public-app-local-support/precomputed-context-core`.
+> **System identity — bds family (Boswell Digital Solutions business system, local-systems tier).** This service is part of the Forge ecosystem backend in `ecosystem/local-systems`. The ecosystem map gives it no Forge-family counterpart. Its contract crate is the bds `precomputed-context-core` (`ecosystem/precomputed-context-core`). It does not use the Forge-family copy `apps/public-app-local-support/forge-precomputed-context-core`.
 
 **Repo:** `context-runtime`
 **Proposed Designation:** `CTX`
@@ -484,9 +484,12 @@ Validation is evidence-based and fail-closed.
 ### Minimum validation posture
 
 - `cargo test --offline` must pass.
-- Every rejected path (stale source, missing required source, unresolved
-  authority, missing target, missing repo, scope escape, invalid payload
-  contract) must fail closed — no success envelope on rejection.
+- Every rejected path (stale source, missing required source, missing target,
+  missing repo, scope escape, invalid payload contract) must fail closed — no
+  success envelope on rejection.
+- Unresolved authority cannot occur today. `src/assemble.rs` and `src/scene.rs`
+  give every gathered source `AuthorityState::Accepted`, so the PCC authority
+  rejection never runs here. PCC tests that rejection in its own repository.
 - Assembly must be deterministic: identical inputs → identical `bundle_hash`.
 
 ### Current proof surface
