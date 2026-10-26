@@ -5,9 +5,12 @@ Validation is evidence-based and fail-closed.
 ### Minimum validation posture
 
 - `cargo test --offline` must pass.
-- Every rejected path (stale source, missing required source, unresolved
-  authority, missing target, missing repo, scope escape, invalid payload
-  contract) must fail closed — no success envelope on rejection.
+- Every rejected path (stale source, missing required source, missing target,
+  missing repo, scope escape, invalid payload contract) must fail closed — no
+  success envelope on rejection.
+- Unresolved authority cannot occur today. `src/assemble.rs` and `src/scene.rs`
+  give every gathered source `AuthorityState::Accepted`, so the PCC authority
+  rejection never runs here. PCC tests that rejection in its own repository.
 - Assembly must be deterministic: identical inputs → identical `bundle_hash`.
 
 ### Current proof surface
