@@ -1,0 +1,91 @@
+name: CI
+
+# The pull-request gate. Cargo.toml takes precomputed-context-core as the path
+# dependency ../../precomputed-context-core, so CI reproduces that layout: this
+# repository at local-systems/context-runtime and PCC beside local-systems/.
+# PCC is checked out at the commit in ci/precomputed-context-core.rev, never at
+# a moving branch. A missing, unreadable or mismatched PCC fails the run.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Pinned so a new stable release cannot add a lint and turn a clean head red.
+  RUST_TOOLCHAIN: "1.97.0"
+  RUNTIME_DIR: local-systems/context-runtime
+
+jobs:
+  rust:
+    name: Rust (fmt, clippy, test) against pinned PCC
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: local-systems/context-runtime
+      - name: Read the governed PCC revision
+        id: pcc
+        run: |
+          rev="$(tr -d '[:space:]' < "$RUNTIME_DIR/ci/precomputed-context-core.rev")"
+          if ! [[ "$rev" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::ci/precomputed-context-core.rev must hold one full 40-character commit SHA"
+            exit 1
+          fi
+          echo "rev=$rev" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: Boswell-Digital-Solutions/precomputed-context-core
+          ref: ${{ steps.pcc.outputs.rev }}
+          path: precomputed-context-core
+      - name: The path dependency resolves to the governed revision
+        working-directory: ${{ env.RUNTIME_DIR }}
+        env:
+          EXPECTED: ${{ steps.pcc.outputs.rev }}
+        run: |
+          pcc="../../precomputed-context-core"
+          test -f "$pcc/Cargo.toml" || { echo "::error::PCC is missing at $pcc"; exit 1; }
+          actual="$(git -C "$pcc" rev-parse HEAD)"
+          if [[ "$actual" != "$EXPECTED" ]]; then
+            echo "::error::PCC is at $actual, expected $EXPECTED"
+            exit 1
+          fi
+          echo "PCC at $actual"
+      - name: Rust toolchain
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component rustfmt,clippy
+          rustup default "$RUST_TOOLCHAIN"
+      - name: Format
+        working-directory: ${{ env.RUNTIME_DIR }}
+        run: cargo fmt --check
+      - name: Clippy
+        working-directory: ${{ env.RUNTIME_DIR }}
+        run: cargo clippy --locked --all-targets -- -D warnings
+      - name: Tests (assembly, containment, HTTP, scene)
+        working-directory: ${{ env.RUNTIME_DIR }}
+        run: cargo test --locked
+      - name: The run left both trees clean
+        run: |
+          git -C "$RUNTIME_DIR" diff --exit-code
+          git -C precomputed-context-core diff --exit-code
+
+  docs:
+    name: Documentation parity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Rebuild doc/CTXSYSTEM.md from doc/system/
+        run: bash doc/system/BUILD.sh
+      - name: The committed artifact matches its parts
+        run: git diff --exit-code -- doc/

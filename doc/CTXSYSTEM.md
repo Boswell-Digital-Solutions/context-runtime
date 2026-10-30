@@ -280,6 +280,17 @@ uniform/per-class freshness policy, tagged SHA-256 bundle identity). This is a
 verification revision, not an immutable dependency pin: Cargo resolves the local
 path checkout. Re-run the runtime tests after changing that checkout.
 
+### CI revision pin — 2026-10-30
+
+CI pins PCC. `ci/precomputed-context-core.rev` holds one full commit SHA,
+currently `b0071c01e8275800c698ef57452dd13443637459`. `.github/workflows/ci.yml`
+checks out PCC at that commit, beside `local-systems/context-runtime`, so the
+path dependency `../../precomputed-context-core` resolves to it. The run fails
+when the file is not a full SHA, when PCC is missing, or when PCC is at a
+different commit. Local builds still resolve whatever checkout sits at the path.
+To move the pin, change the file in a pull request and let CI prove the new
+revision.
+
 ---
 
 # §7 — Scope
@@ -522,6 +533,18 @@ cargo test --offline
 CONTEXT_RUNTIME_BIND=127.0.0.1:8011 ./target/debug/context-runtime &
 <venv>/bin/python scripts/smoke_crossing.py http://127.0.0.1:8011
 ```
+
+### Continuous integration
+
+`.github/workflows/ci.yml` runs on every pull request and every push to
+`master`. The Rust job checks out PCC at the pinned revision (see §6), confirms
+the path dependency resolves to it, and runs `cargo fmt --check`,
+`cargo clippy --locked --all-targets -- -D warnings`, and `cargo test --locked`
+on Rust 1.97.0. It then fails if either tree changed. The documentation job
+rebuilds `doc/CTXSYSTEM.md` and fails when it differs from `doc/system/`.
+
+A green run does not prove the authority rejection path. Every gathered source
+is still `AuthorityState::Accepted` (see the minimum validation posture above).
 
 ### PCC compatibility regression coverage
 

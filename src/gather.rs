@@ -325,6 +325,10 @@ fn top_level_dirs(repo_root: &Path) -> Vec<String> {
     dirs
 }
 
+/// Validation commands, execution order, pass conditions and environment
+/// requirements, in that order.
+type ValidationFacts = (Vec<String>, Vec<String>, Vec<String>, Vec<String>);
+
 fn detect_repo_facts(repo_root: &Path, target_rel: &str, canonical_doc: Option<&str>) -> RepoFacts {
     let has = |p: &str| repo_root.join(p).exists();
     let target_is_py = target_rel.ends_with(".py");
@@ -334,7 +338,7 @@ fn detect_repo_facts(repo_root: &Path, target_rel: &str, canonical_doc: Option<&
         &'static str,
         Vec<String>,
         Vec<String>,
-        (Vec<String>, Vec<String>, Vec<String>, Vec<String>),
+        ValidationFacts,
     ) = if has("Cargo.toml") || target_is_rs {
         (
             "rust",

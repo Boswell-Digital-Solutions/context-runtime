@@ -28,3 +28,14 @@ The path dependency was verified against PCC revision
 uniform/per-class freshness policy, tagged SHA-256 bundle identity). This is a
 verification revision, not an immutable dependency pin: Cargo resolves the local
 path checkout. Re-run the runtime tests after changing that checkout.
+
+### CI revision pin — 2026-10-30
+
+CI pins PCC. `ci/precomputed-context-core.rev` holds one full commit SHA,
+currently `b0071c01e8275800c698ef57452dd13443637459`. `.github/workflows/ci.yml`
+checks out PCC at that commit, beside `local-systems/context-runtime`, so the
+path dependency `../../precomputed-context-core` resolves to it. The run fails
+when the file is not a full SHA, when PCC is missing, or when PCC is at a
+different commit. Local builds still resolve whatever checkout sits at the path.
+To move the pin, change the file in a pull request and let CI prove the new
+revision.

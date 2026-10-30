@@ -46,7 +46,10 @@ async fn assemble_scenes_mints_lineage_triple_and_serves_scene_payloads() {
         .json()
         .await
         .unwrap();
-    assert_eq!(hv["scene_assemble"]["task_family"], serde_json::json!("continuity"));
+    assert_eq!(
+        hv["scene_assemble"]["task_family"],
+        serde_json::json!("continuity")
+    );
 
     let resp = client
         .post(format!("{base}/v1/context/assemble-scenes"))
@@ -54,16 +57,26 @@ async fn assemble_scenes_mints_lineage_triple_and_serves_scene_payloads() {
         .send()
         .await
         .unwrap();
-    assert!(resp.status().is_success(), "assemble-scenes status {}", resp.status());
+    assert!(
+        resp.status().is_success(),
+        "assemble-scenes status {}",
+        resp.status()
+    );
     let v: serde_json::Value = resp.json().await.unwrap();
 
     identity::assert_pcc_identity(&v);
 
     // The lineage triple AuthorForge threads into continuity_check.
     let bundle_id = v["context_bundle_id"].as_str().unwrap().to_string();
-    assert!(bundle_id.starts_with("ctxb.sha256."), "bundle id {bundle_id}");
     assert!(
-        v["task_intent_id"].as_str().unwrap().starts_with("ti_continuity_"),
+        bundle_id.starts_with("ctxb.sha256."),
+        "bundle id {bundle_id}"
+    );
+    assert!(
+        v["task_intent_id"]
+            .as_str()
+            .unwrap()
+            .starts_with("ti_continuity_"),
         "intent {}",
         v["task_intent_id"]
     );
@@ -119,7 +132,10 @@ async fn assemble_scenes_is_deterministic_and_echoes_caller_intent() {
     let second = mint().await;
 
     // Caller-supplied intent id is echoed verbatim (the chain shares one id).
-    assert_eq!(first["task_intent_id"], serde_json::json!("ti_caller_supplied_001"));
+    assert_eq!(
+        first["task_intent_id"],
+        serde_json::json!("ti_caller_supplied_001")
+    );
     // Same scenes → same governed hash + id (replay-stable mint).
     assert_eq!(first["bundle_hash"], second["bundle_hash"]);
     assert_eq!(first["context_bundle_id"], second["context_bundle_id"]);

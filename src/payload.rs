@@ -43,7 +43,9 @@ impl TypedPayload {
         match self {
             TypedPayload::KeyFile(c) => serde_json::to_value(c).unwrap_or(serde_json::Value::Null),
             TypedPayload::RepoNav(c) => serde_json::to_value(c).unwrap_or(serde_json::Value::Null),
-            TypedPayload::Validation(c) => serde_json::to_value(c).unwrap_or(serde_json::Value::Null),
+            TypedPayload::Validation(c) => {
+                serde_json::to_value(c).unwrap_or(serde_json::Value::Null)
+            }
         }
     }
 }
@@ -190,9 +192,9 @@ pub fn build_payload(
         }
     };
 
-    payload
-        .validate()
-        .map_err(|e| ContextError::PayloadInvalid(format!("{} payload: {e}", source.role.as_str())))?;
+    payload.validate().map_err(|e| {
+        ContextError::PayloadInvalid(format!("{} payload: {e}", source.role.as_str()))
+    })?;
     Ok(payload)
 }
 
