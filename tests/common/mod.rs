@@ -12,7 +12,10 @@ impl TempRepo {
     /// Build a minimal python repo: pyproject + README + pkg/{target,other}.py
     pub fn python() -> Self {
         let root = unique_dir("ctxrt_py");
-        write(&root.join("pyproject.toml"), "[project]\nname = \"fixture\"\n");
+        write(
+            &root.join("pyproject.toml"),
+            "[project]\nname = \"fixture\"\n",
+        );
         write(
             &root.join("README.md"),
             "# Fixture Repo\n\nA hermetic fixture for context-runtime tests.\n",

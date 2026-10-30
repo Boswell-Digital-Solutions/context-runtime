@@ -23,15 +23,15 @@ impl Default for Config {
 impl Config {
     pub fn from_env() -> Self {
         let mut cfg = Config::default();
-        if let Ok(addr) = std::env::var("CONTEXT_RUNTIME_BIND") {
-            if !addr.trim().is_empty() {
-                cfg.bind_addr = addr;
-            }
+        if let Ok(addr) = std::env::var("CONTEXT_RUNTIME_BIND")
+            && !addr.trim().is_empty()
+        {
+            cfg.bind_addr = addr;
         }
-        if let Ok(age) = std::env::var("CONTEXT_RUNTIME_MAX_SOURCE_AGE_MINUTES") {
-            if let Ok(parsed) = age.trim().parse::<u64>() {
-                cfg.default_max_source_age_minutes = parsed;
-            }
+        if let Ok(age) = std::env::var("CONTEXT_RUNTIME_MAX_SOURCE_AGE_MINUTES")
+            && let Ok(parsed) = age.trim().parse::<u64>()
+        {
+            cfg.default_max_source_age_minutes = parsed;
         }
         cfg
     }

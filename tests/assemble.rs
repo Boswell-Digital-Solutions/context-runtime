@@ -33,7 +33,10 @@ fn assembles_governed_bundle_with_code_native_payloads() {
     // Envelope is the real PCC manifest.
     assert!(out.manifest.context_bundle_id.starts_with("ctxb.sha256."));
     assert!(!out.manifest.bundle_hash.is_empty());
-    assert_eq!(out.manifest.replay_eligibility, pcc::ReplayEligibility::Eligible);
+    assert_eq!(
+        out.manifest.replay_eligibility,
+        pcc::ReplayEligibility::Eligible
+    );
     assert!(!out.manifest.authority_conflict_flag);
 
     // Four roles gathered: target, adjacent, repo_truth, validation.
@@ -42,18 +45,28 @@ fn assembles_governed_bundle_with_code_native_payloads() {
     assert_eq!(out.payloads.len(), 4);
 
     // Each payload is a validated code-native PCC contract.
-    let classes: Vec<&str> = out.payloads.values().map(|p| p.artifact_class.as_str()).collect();
+    let classes: Vec<&str> = out
+        .payloads
+        .values()
+        .map(|p| p.artifact_class.as_str())
+        .collect();
     assert!(classes.contains(&"key_file_packet"));
     assert!(classes.contains(&"repo_navigation_map"));
     assert!(classes.contains(&"validation_command_packet"));
 
     // The target payload is a KeyFilePacket pointing at the target file.
     let target_ref = format!("file://fixture/{}", repo.target_rel());
-    let target_payload = out.payloads.get(&target_ref).expect("target payload present");
+    let target_payload = out
+        .payloads
+        .get(&target_ref)
+        .expect("target payload present");
     assert_eq!(target_payload.role, "target");
     assert_eq!(target_payload.source_class, "active_scene");
     assert_eq!(target_payload.artifact_class, "key_file_packet");
-    assert_eq!(target_payload.contract["file_path"], serde_json::json!("pkg/target.py"));
+    assert_eq!(
+        target_payload.contract["file_path"],
+        serde_json::json!("pkg/target.py")
+    );
 }
 
 #[test]
@@ -86,7 +99,10 @@ fn missing_target_fails_closed() {
     let mut p = params(repo.root.clone(), 100_000);
     p.target_file = "pkg/does_not_exist.py".to_string();
     let err = assemble(&p, SystemTime::now()).expect_err("missing target must fail closed");
-    assert!(matches!(err, ContextError::TargetNotFound(_)), "got {err:?}");
+    assert!(
+        matches!(err, ContextError::TargetNotFound(_)),
+        "got {err:?}"
+    );
 }
 
 #[test]
@@ -100,7 +116,8 @@ fn missing_repo_root_fails_closed() {
 #[test]
 fn store_serves_admitted_refs_and_fails_closed_on_scope_escape() {
     let repo = TempRepo::python();
-    let bundle = assemble(&params(repo.root.clone(), 100_000), SystemTime::now()).expect("assembly");
+    let bundle =
+        assemble(&params(repo.root.clone(), 100_000), SystemTime::now()).expect("assembly");
     let bundle_id = bundle.manifest.context_bundle_id.clone();
     let admitted = bundle.payload_refs[0].clone();
 
@@ -109,20 +126,28 @@ fn store_serves_admitted_refs_and_fails_closed_on_scope_escape() {
     assert_eq!(stored_id, bundle_id);
 
     // Admitted ref resolves to its payload.
-    let got = store.get_payload(&bundle_id, &admitted).expect("admitted ref resolves");
+    let got = store
+        .get_payload(&bundle_id, &admitted)
+        .expect("admitted ref resolves");
     assert_eq!(got.payload_ref, admitted);
 
     // Non-admitted ref → scope escape (CONFLICT).
     let err = store
         .get_payload(&bundle_id, "file://fixture/not/admitted.py")
         .expect_err("scope escape must fail closed");
-    assert!(matches!(err, ContextError::RefNotAdmitted(_)), "got {err:?}");
+    assert!(
+        matches!(err, ContextError::RefNotAdmitted(_)),
+        "got {err:?}"
+    );
 
     // Unknown bundle → not found.
     let err = store
         .get_payload("ctxb_unknown", &admitted)
         .expect_err("unknown bundle must fail closed");
-    assert!(matches!(err, ContextError::BundleNotFound(_)), "got {err:?}");
+    assert!(
+        matches!(err, ContextError::BundleNotFound(_)),
+        "got {err:?}"
+    );
 }
 
 /// If the real forgeHQ repo is present, assemble against a real source file and
@@ -146,7 +171,10 @@ fn assembles_against_real_forgehq_if_present() {
         override_posture: pcc::OverridePosture::DisallowAll,
     };
     let out = assemble(&p, SystemTime::now()).expect("real forgeHQ assembly");
-    assert!(out.payload_refs.len() >= 3, "expected target+doc+validation at least");
+    assert!(
+        out.payload_refs.len() >= 3,
+        "expected target+doc+validation at least"
+    );
     let target_ref = format!("file://forgehq/{target}");
     let tp = out.payloads.get(&target_ref).expect("target payload");
     assert_eq!(tp.artifact_class, "key_file_packet");

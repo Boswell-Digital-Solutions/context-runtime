@@ -44,6 +44,18 @@ CONTEXT_RUNTIME_BIND=127.0.0.1:8011 ./target/debug/context-runtime &
 <venv>/bin/python scripts/smoke_crossing.py http://127.0.0.1:8011
 ```
 
+### Continuous integration
+
+`.github/workflows/ci.yml` runs on every pull request and every push to
+`master`. The Rust job checks out PCC at the pinned revision (see §6), confirms
+the path dependency resolves to it, and runs `cargo fmt --check`,
+`cargo clippy --locked --all-targets -- -D warnings`, and `cargo test --locked`
+on Rust 1.97.0. It then fails if either tree changed. The documentation job
+rebuilds `doc/CTXSYSTEM.md` and fails when it differs from `doc/system/`.
+
+A green run does not prove the authority rejection path. Every gathered source
+is still `AuthorityState::Accepted` (see the minimum validation posture above).
+
 ### PCC compatibility regression coverage
 
 Both HTTP assembly tests validate the native tagged ID/hash pair, PCC manifest
