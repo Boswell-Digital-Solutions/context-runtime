@@ -1,5 +1,19 @@
 # context-runtime — Known Issues
 
+## doc/system does not state the default bind or that no route authenticates its caller (Open 2026-10-30) — CTX-DOC-BIND-AND-CALLER-AUTH-UNSTATED-20261030
+
+- **Found**: 2026-10-30, by the BDS-XMACH-CALLER-BOUNDARY-001 WP00 inventory (forge PR #325). Verified at `origin/master` `94a560b`. Source and documentation reading only. No running service was tested.
+- **Location**: `src/config.rs:17` (default bind), `src/config.rs:26-30` (`CONTEXT_RUNTIME_BIND` override); `src/main.rs:20` (bind); `src/http.rs:31-37` (router); `doc/system/` (all parts); `doc/system/10-validation-and-proof.md:43-44` (the only mention).
+- **Observed behavior**:
+  - The service binds `127.0.0.1:8011` by default (`src/config.rs:17`).
+  - `CONTEXT_RUNTIME_BIND` replaces the address when it is set and not empty (`src/config.rs:26-30`). The code does not check the value. Any address that `TcpListener::bind` accepts is used (`src/main.rs:20`), a non-loopback address included.
+  - The router has four routes and no authentication layer or middleware (`src/http.rs:31-37`). `GET /healthz`, `POST /v1/context/assemble`, `POST /v1/context/assemble-scenes` and `GET /v1/context/{bundle_id}/payload` take no caller credential.
+- **Documentation claim**: no part of `doc/system/` states the default bind, the `CONTEXT_RUNTIME_BIND` variable, that the override accepts a non-loopback address, or that no route authenticates its caller. The only mention of `127.0.0.1:8011` is the smoke command in `doc/system/10-validation-and-proof.md:43-44`. That command sets the variable explicitly and does not say that the value is the default.
+- **Impact**: a reader of `doc/system/` cannot learn the network posture of the service. This is a documentation gap. It is not classified here as a security vulnerability. It is relevant to threat T-1 of the cross-machine plan BDS-XMACH-CALLER-BOUNDARY-001.
+- **Proposed correction**: add to `doc/system/` (for example part 03, architecture, or part 07, scope) a statement of: the default bind `127.0.0.1:8011`; the `CONTEXT_RUNTIME_BIND` override and that it accepts any address; and that no route authenticates its caller, so the loopback bind is the only access control by default. Rebuild `doc/CTXSYSTEM.md` with `bash doc/system/BUILD.sh`. This entry does not edit `doc/system`.
+- **Fix**: none. Documentation only. No runtime change is proposed.
+- **Status**: Open — recorded, unresolved until the correction is verified.
+
 ## doc/system named a counterpart path that does not exist (Closed 2026-10-26) — CTX-DOC-COUNTERPART-PATH-20261026
 
 - **Location**: `doc/system/01-identity-philosophy.md`, identity banner.
