@@ -27,8 +27,13 @@ the gate does not go red on unchanged code when the advisory feed moves.
 
 ### Advisory reach — 2026-10-31
 
-`cargo audit` reported nine vulnerabilities in `Cargo.lock` and none of them
-reaches the served binary. The runtime dependency graph
+`cargo audit` reported nine vulnerabilities in `Cargo.lock`. All nine are now
+fixed in the lock: `h2` moved to 0.4.20, `rustls` to 0.23.46 and
+`rustls-webpki` to 0.103.16, each inside its existing semver range. `cargo
+audit` reports none.
+
+None of the nine reached the served binary either, which is worth recording
+because it is the general rule for reading an advisory here. The runtime dependency graph
 (`cargo tree --edges normal`) holds no `h2`, `rustls`, `rustls-webpki`,
 `webpki-roots` or `native-tls`:
 
