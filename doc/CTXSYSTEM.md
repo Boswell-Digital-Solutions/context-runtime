@@ -272,6 +272,29 @@ Dependencies are accepted only when they support the runtime, the real PCC
 contracts, deterministic hashing, or fail-closed serving. No persistence or LLM
 dependency in C1.
 
+CI audits `Cargo.lock` with `cargo audit` on every change. A vulnerability fails
+the job. A warning (unmaintained, unsound, yanked) reports without failing, so
+the gate does not go red on unchanged code when the advisory feed moves.
+
+### Advisory reach — 2026-10-31
+
+`cargo audit` reported nine vulnerabilities in `Cargo.lock` and none of them
+reaches the served binary. The runtime dependency graph
+(`cargo tree --edges normal`) holds no `h2`, `rustls`, `rustls-webpki`,
+`webpki-roots` or `native-tls`:
+
+- `h2` enters only through `hyper`'s `http2` feature. `axum` is declared with
+  `features = ["macros"]` and no `http2`, so the runtime build does not compile
+  it. The full graph reaches `h2` through `hyper` and through
+  `hyper-tls` → `reqwest`.
+- The `rustls` and `rustls-webpki` advisories enter through `reqwest`'s TLS
+  features. `reqwest` is in the runtime graph — `jsonschema` 0.18 depends on it
+  and PCC depends on `jsonschema` — but without TLS features, so no TLS crate is
+  compiled into the service. `reqwest` is also a dev dependency of this repo.
+
+A lockfile advisory is therefore not evidence that the service is exposed. State
+the reach before treating one as a runtime finding.
+
 ### Compatibility verification snapshot — 2026-10-01
 
 The path dependency was verified against PCC revision
@@ -526,6 +549,22 @@ drives the running service exactly as forgeHQ will — proves the Rust↔Python
 crossing end to end.
 
 ### Running
+
+Every cargo command needs the checkout layout first. `Cargo.toml` declares
+`precomputed-context-core = { path = "../../precomputed-context-core" }`, two
+levels up, so PCC must sit two directories above this checkout. A flat layout of
+sibling repositories does not satisfy it, and cargo then fails before it loads
+the manifest:
+
+```text
+error: failed to get `precomputed-context-core` as a dependency of package
+  `context-runtime v0.1.0`
+  unable to update /<parent>/precomputed-context-core
+```
+
+`cargo build`, `cargo test` and `cargo tree` are all unavailable in that state.
+`cargo audit` still works, because it reads only `Cargo.lock`. CI builds the
+layout it needs (see §6), so this precondition applies to a local run.
 
 ```bash
 cargo test --offline

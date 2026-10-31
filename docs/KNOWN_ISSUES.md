@@ -30,3 +30,22 @@
 - **Root cause**: the service has no source of authority state. The value is a constant.
 - **Fix**: documentation only. Part 10 now says that the path cannot occur. No code change is authorized. A real authority source needs its own design.
 - **Status**: Open. Closed scope: the documentation claim. Open scope: the constant authority state.
+
+## The declared local gate cannot run in a flat checkout (Open 2026-10-31) — CTX-LOCAL-GATE-LAYOUT-20261031
+
+- **Location**: `Cargo.toml:33`; `doc/system/10-validation-and-proof.md` (Running); `CLAUDE.md`.
+- **What is wrong**: the manifest declares `precomputed-context-core = { path = "../../precomputed-context-core" }`, two levels up. In a flat layout of sibling repositories the path resolves above the parent directory, so cargo fails before it loads the manifest: `error: failed to get precomputed-context-core as a dependency ... unable to update /<parent>/precomputed-context-core`. `cargo build`, `cargo test` and `cargo tree` are all unavailable. `cargo audit` still works, because it reads only `Cargo.lock`.
+- **Found**: 2026-10-31, in the AuthorForge support-repository review (SR-07), while trying to run the declared gate on a flat checkout.
+- **What was already correct**: `doc/system/06-dependencies.md` already documents the CI layout and the `ci/precomputed-context-core.rev` pin. The gap was the local side: §10 and `CLAUDE.md` named `cargo test --offline` with no layout precondition, so a reader or an agent on a flat checkout reads the failure as a defect in the repository.
+- **Fix**: §10's Running section and `CLAUDE.md` now state the precondition, show the exact error, and say that `cargo audit` is the one command that works without it.
+- **Status**: Open. Closed scope: the documentation gap. Open scope: whether the two-level path should become a workspace member, a git dependency or a registry dependency, so the layout stops being a precondition. That needs its own decision.
+
+## Cargo.lock advisories were unaudited, and none reaches the served binary (Open 2026-10-31) — CTX-LOCKFILE-ADVISORY-REACH-20261031
+
+- **Location**: `Cargo.lock`; `.github/workflows/ci.yml`; `doc/system/06-dependencies.md`.
+- **What was wrong**: no gate audited `Cargo.lock`. `cargo audit` 0.22.2 reported nine vulnerabilities over 269 crate dependencies on 2026-10-31: `h2` 0.4.13 RUSTSEC-2026-0258, `rustls` 0.23.37 (four), `rustls-webpki` 0.103.10 (four), plus `anyhow` and `tokio` warnings.
+- **Found**: 2026-10-31, in the AuthorForge support-repository review (SR-06, SR-04).
+- **Reach, measured**: none of the nine reaches the served binary. `cargo tree --edges normal` holds no `h2`, `rustls`, `rustls-webpki`, `webpki-roots` or `native-tls`. `h2` enters only through `hyper`'s `http2` feature, and `axum` is declared `features = ["macros"]` without `http2`. The `rustls` advisories enter through `reqwest`'s TLS features; `reqwest` is in the runtime graph (`jsonschema` 0.18 depends on it, and PCC depends on `jsonschema`) but without TLS features, so no TLS crate is compiled in. `reqwest` is additionally a dev dependency here.
+- **Correction to the source review**: that review stated the eight TLS advisories arrive "only through `reqwest`, declared under `[dev-dependencies]`", and left `h2` reachability open. `reqwest` is also a runtime dependency through PCC's `jsonschema`, and `h2` is now measured as absent from the runtime graph. The conclusion is unchanged and better supported: the advisories are dev-and-test only.
+- **Fix**: an `audit` job runs `cargo audit` on every change. A vulnerability fails it; a warning reports without failing, so the gate does not go red on unchanged code when the feed moves. `doc/system/06-dependencies.md` records the measured reach and the rule that a lockfile advisory is not by itself evidence of runtime exposure.
+- **Status**: Open. Closed scope: the missing gate and the unstated reach. Open scope: the nine advisories stay in the lock until `jsonschema` and `axum`/`hyper` release trees that drop them; the gate reports them and the job stays green because none is a vulnerability in the served build.

@@ -37,6 +37,22 @@ crossing end to end.
 
 ### Running
 
+Every cargo command needs the checkout layout first. `Cargo.toml` declares
+`precomputed-context-core = { path = "../../precomputed-context-core" }`, two
+levels up, so PCC must sit two directories above this checkout. A flat layout of
+sibling repositories does not satisfy it, and cargo then fails before it loads
+the manifest:
+
+```text
+error: failed to get `precomputed-context-core` as a dependency of package
+  `context-runtime v0.1.0`
+  unable to update /<parent>/precomputed-context-core
+```
+
+`cargo build`, `cargo test` and `cargo tree` are all unavailable in that state.
+`cargo audit` still works, because it reads only `Cargo.lock`. CI builds the
+layout it needs (see §6), so this precondition applies to a local run.
+
 ```bash
 cargo test --offline
 # crossing smoke:

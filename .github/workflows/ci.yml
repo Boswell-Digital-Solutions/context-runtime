@@ -26,6 +26,33 @@ env:
   RUNTIME_DIR: local-systems/context-runtime
 
 jobs:
+  # Nothing audited Cargo.lock. An external review found nine advisories in it on
+  # 2026-10-31, none of which reaches the served binary (see doc/system/06), but
+  # no gate here would have said so either way.
+  #
+  # cargo audit reads the lock, so this needs neither PCC nor the nested layout
+  # the rust job builds. The threshold is explicit: a vulnerability fails the job,
+  # and a warning (unmaintained, unsound, yanked) reports without failing.
+  # --deny warnings is deliberately not used, because an unmaintained-crate
+  # advisory would then turn this job red on unchanged code, and a gate that does
+  # that trains people to ignore red CI. An accepted vulnerability goes here as an
+  # explicit, dated --ignore entry.
+  #
+  # Accepted advisories (none today). Add as: --ignore RUSTSEC-YYYY-NNNN \
+  #   # accepted <date>, why
+  audit:
+    name: Dependency advisories
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Rust toolchain
+        run: rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+      - name: cargo audit
+        run: cargo audit
+
   rust:
     name: Rust (fmt, clippy, test) against pinned PCC
     runs-on: ubuntu-24.04
