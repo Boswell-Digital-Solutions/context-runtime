@@ -17,11 +17,21 @@ Read that first; the README is a pointer.
 
 ## Common Commands
 
+**Checkout layout first.** `Cargo.toml` declares
+`precomputed-context-core = { path = "../../precomputed-context-core" }`, so PCC
+must sit two directories above this checkout. A flat layout of sibling repos does
+not satisfy it, and cargo then fails before loading the manifest
+(`unable to update /<parent>/precomputed-context-core`) — `cargo build`,
+`cargo test` and `cargo tree` all become unavailable, so a local gate reports a
+false failure. `cargo audit` still works, because it reads only `Cargo.lock`.
+CI builds the layout itself and pins PCC to `ci/precomputed-context-core.rev`.
+
 ```bash
 cargo build --offline --bin context-runtime
 CONTEXT_RUNTIME_BIND=127.0.0.1:8011 ./target/debug/context-runtime   # run
 
 cargo test --offline    # unit/integration tests
+cargo audit             # lockfile advisories; needs no layout
 
 # Rust<->Python crossing smoke test (run client from a project venv):
 <venv>/bin/python scripts/smoke_crossing.py http://127.0.0.1:8011

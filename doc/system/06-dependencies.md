@@ -21,6 +21,34 @@ Dependencies are accepted only when they support the runtime, the real PCC
 contracts, deterministic hashing, or fail-closed serving. No persistence or LLM
 dependency in C1.
 
+CI audits `Cargo.lock` with `cargo audit` on every change. A vulnerability fails
+the job. A warning (unmaintained, unsound, yanked) reports without failing, so
+the gate does not go red on unchanged code when the advisory feed moves.
+
+### Advisory reach — 2026-10-31
+
+`cargo audit` reported nine vulnerabilities in `Cargo.lock`. All nine are now
+fixed in the lock: `h2` moved to 0.4.20, `rustls` to 0.23.46 and
+`rustls-webpki` to 0.103.16, each inside its existing semver range. `cargo
+audit` reports none.
+
+None of the nine reached the served binary either, which is worth recording
+because it is the general rule for reading an advisory here. The runtime dependency graph
+(`cargo tree --edges normal`) holds no `h2`, `rustls`, `rustls-webpki`,
+`webpki-roots` or `native-tls`:
+
+- `h2` enters only through `hyper`'s `http2` feature. `axum` is declared with
+  `features = ["macros"]` and no `http2`, so the runtime build does not compile
+  it. The full graph reaches `h2` through `hyper` and through
+  `hyper-tls` → `reqwest`.
+- The `rustls` and `rustls-webpki` advisories enter through `reqwest`'s TLS
+  features. `reqwest` is in the runtime graph — `jsonschema` 0.18 depends on it
+  and PCC depends on `jsonschema` — but without TLS features, so no TLS crate is
+  compiled into the service. `reqwest` is also a dev dependency of this repo.
+
+A lockfile advisory is therefore not evidence that the service is exposed. State
+the reach before treating one as a runtime finding.
+
 ### Compatibility verification snapshot — 2026-10-01
 
 The path dependency was verified against PCC revision
