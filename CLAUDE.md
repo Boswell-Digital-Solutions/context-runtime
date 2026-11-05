@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Repo Identity
+
+- Default branch: master
+
 ## Project Overview
 
 context-runtime (CTX) is the PCC-conforming context runtime for the Forge self-healing loop. For a
