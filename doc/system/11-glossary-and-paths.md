@@ -4,7 +4,7 @@
 
 - Repo root: `~/Forge/ecosystem/local-systems/context-runtime`
 - Documentation source root: `doc/system/`
-- Build entry: `doc/system/BUILD.sh` → `doc/CTXSYSTEM.md`
+- Build entry: `doc/system/BUILD.sh` → `doc/ctxSYSTEM.md`
 - Pipeline: `src/assemble.rs`; HTTP: `src/http.rs`; gather: `src/gather.rs`;
   payloads: `src/payload.rs`
 - Contract authority: `../../precomputed-context-core` (`PCC`)

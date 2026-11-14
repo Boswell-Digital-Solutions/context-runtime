@@ -11,7 +11,7 @@ service; nothing here authorizes public-release or production-certification clai
 
 | Class | Scope | Example |
 |-------|-------|---------|
-| C0 | Documentation only | Editing `doc/system/` chapters, rebuilding `doc/CTXSYSTEM.md` |
+| C0 | Documentation only | Editing `doc/system/` chapters, rebuilding `doc/ctxSYSTEM.md` |
 | C1 | Contract-surface conformance | Honoring PCC's exported contracts at the boundary (§4) |
 | C2 | Context runtime | gather/assemble/serve execution logic (§3) |
 | C3 | Versioning / slice progression | A new slice, slice gating, version bump (§5) |
@@ -22,7 +22,7 @@ service; nothing here authorizes public-release or production-certification clai
 ## Required Evidence Per Change Class
 
 - **C0** — rebuilt artifact (`bash doc/system/BUILD.sh` → `BUILD_OK`), edited
-  source chapter (never a hand-edit to `doc/CTXSYSTEM.md`).
+  source chapter (never a hand-edit to `doc/ctxSYSTEM.md`).
 - **C1** — proof the boundary still conforms to PCC's exported contracts *exactly*
   — context-runtime consumes, never redefines, those contracts.
 - **C2** — tests for the changed gather/assemble/serve path; fail-closed on
@@ -37,7 +37,7 @@ service; nothing here authorizes public-release or production-certification clai
 ```bash
 cargo test                              # full suite
 cargo build                             # builds against the pinned PCC contract
-bash doc/system/BUILD.sh                # doc changes (C0) -> BUILD_OK designation=CTX
+bash doc/system/BUILD.sh                # doc changes (C0) -> BUILD_OK designation=ctx
 ```
 
 ## Contract-Conformance / Boundary Rules
@@ -50,7 +50,7 @@ on missing/invalid context rather than fabricating it.
 ## Documentation Change Rules (C0)
 
 `doc/system/` source modules are the only editing surface. The compiled
-`doc/CTXSYSTEM.md` is regenerated, never hand-edited (§8). Snapshot facts are
+`doc/ctxSYSTEM.md` is regenerated, never hand-edited (§8). Snapshot facts are
 re-measured and re-dated, not asserted as guarantees.
 
 ## Release / Readiness Claim Rules

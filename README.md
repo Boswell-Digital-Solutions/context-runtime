@@ -1,4 +1,4 @@
-# bds · context-runtime (CTX)
+# bds · context-runtime (ctx)
 
 > **System identity — bds family (Boswell Digital Solutions business system, local-systems tier).**
 > The PCC-conforming context runtime for the self-healing loop; a business/backend local system in the Forge **ecosystem backend**, part of `ecosystem/local-systems`.
@@ -9,7 +9,7 @@ The PCC-conforming **context runtime** for the self-healing loop. Turns a code
 target (repo + file) into a governed context bundle the AI shaper can build a fix
 from, safely.
 
-> Canonical docs live in `doc/system/` and assemble to `doc/CTXSYSTEM.md`
+> Canonical docs live in `doc/system/` and assemble to `doc/ctxSYSTEM.md`
 > (`bash doc/system/BUILD.sh`). Read that first; this README is a pointer.
 
 ## What it does
