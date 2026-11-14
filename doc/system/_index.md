@@ -4,7 +4,7 @@
 **Document role:** Canonical compiled technical reference for the context-runtime PCC-conforming context runtime
 **Source:** `doc/system/`
 **Build command:** `bash doc/system/BUILD.sh`
-**Document version:** 2.0 (2026-06-19) — BDS canonical-compliance migration (7-group class-aware structure, truth classes, designation-bound fail-closed assembly, authored governance trio)
+**Document version:** 2.1 (2026-11-14) — flat-file migration off the retired 7-group subdirectory layout (BDS Documentation Protocol v2.0 §5.3); truth classes, designation-bound fail-closed assembly, and the authored governance trio carry over unchanged
 **Protocol:** BDS Documentation Protocol v2.0; BDS Repo Documentation System Canonical Compliance Standard
 
 > **Generated artifact warning:** `doc/CTXSYSTEM.md` is assembled output. Edit the
@@ -27,17 +27,17 @@ boundary and §8 for ownership and designation doctrine.
 
 | Part | File | Contents |
 | --- | --- | --- |
-| §1 | `00_overview/01-identity-philosophy.md` | Repo identity, PCC-conforming runtime posture |
-| §2 | `00_overview/02-purpose-and-scope.md` | Purpose and scope |
-| §3 | `00_overview/03-architecture.md` | Architecture overview (gather → assemble → serve) |
-| §4 | `10_service-contract/04-contract-surface.md` | Contract surface (PCC-exported contracts honored) |
-| §5 | `20_runtime/05-versioning-slice-progression.md` | Versioning & slice progression |
-| §6 | `30_dependencies/06-dependencies.md` | Dependencies (incl. PCC pin) |
-| §7 | `40_governance/07-scope.md` | Service authority boundary, truth classes |
-| §8 | `40_governance/08-governance.md` | Ownership, designation doctrine, authority hierarchy |
-| §9 | `40_governance/09-change-control.md` | Change classes, evidence, verification commands |
-| §10 | `50_operations/10-validation-and-proof.md` | Validation & proof |
-| §11 | `99_appendices/11-glossary-and-paths.md` | Glossary & paths |
+| §1 | `01-identity-philosophy.md` | Repo identity, PCC-conforming runtime posture |
+| §2 | `02-purpose-and-scope.md` | Purpose and scope |
+| §3 | `03-architecture.md` | Architecture overview (gather → assemble → serve) |
+| §4 | `04-contract-surface.md` | Contract surface (PCC-exported contracts honored) |
+| §5 | `05-versioning-slice-progression.md` | Versioning & slice progression |
+| §6 | `06-dependencies.md` | Dependencies (incl. PCC pin) |
+| §7 | `07-scope.md` | Service authority boundary, truth classes |
+| §8 | `08-governance.md` | Ownership, designation doctrine, authority hierarchy |
+| §9 | `09-change-control.md` | Change classes, evidence, verification commands |
+| §10 | `10-validation-and-proof.md` | Validation & proof |
+| §11 | `11-glossary-and-paths.md` | Glossary & paths |
 
 ## Quick Assembly
 
