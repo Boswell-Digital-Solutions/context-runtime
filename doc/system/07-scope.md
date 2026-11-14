@@ -4,7 +4,7 @@
 
 This `doc/system/` tree is the modular source of the **context-runtime compiled
 system reference**, assembled into the designation-bound artifact
-`doc/CTXSYSTEM.md` (designation `CTX`) via `bash doc/system/BUILD.sh`. This chapter
+`doc/ctxSYSTEM.md` (designation `ctx`) via `bash doc/system/BUILD.sh`. This chapter
 defines context-runtime's authority and where it ends. context-runtime is an
 internal Forge ecosystem service — single-operator, local, fail-closed — not a
 public product and not externally release-certified.

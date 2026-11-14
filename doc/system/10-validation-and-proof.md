@@ -67,7 +67,7 @@ CONTEXT_RUNTIME_BIND=127.0.0.1:8011 ./target/debug/context-runtime &
 the path dependency resolves to it, and runs `cargo fmt --check`,
 `cargo clippy --locked --all-targets -- -D warnings`, and `cargo test --locked`
 on Rust 1.97.0. It then fails if either tree changed. The documentation job
-rebuilds `doc/CTXSYSTEM.md` and fails when it differs from `doc/system/`.
+rebuilds `doc/ctxSYSTEM.md` and fails when it differs from `doc/system/`.
 
 A green run does not prove the authority rejection path. Every gathered source
 is still `AuthorityState::Accepted` (see the minimum validation posture above).

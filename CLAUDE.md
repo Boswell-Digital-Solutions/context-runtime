@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-context-runtime (CTX) is the PCC-conforming context runtime for the Forge self-healing loop. For a
+context-runtime (ctx) is the PCC-conforming context runtime for the Forge self-healing loop. For a
 target file it gathers candidate sources read-only, runs the real
 `precomputed_context_core::assemble_context` to produce a governed `ContextBundleManifest`
 (admissibility / freshness / authority / deterministic `bundle_hash` / replay eligibility), builds a
@@ -16,7 +16,7 @@ validated code-native PCC contract behind each admitted ref (`KeyFilePacket` / `
 `ValidationCommandPacket`), and serves both over HTTP — fail-closed on scope escape. Rust, built on
 axum + tokio.
 
-Canonical docs live in `doc/system/` and assemble to `doc/CTXSYSTEM.md` (`bash doc/system/BUILD.sh`).
+Canonical docs live in `doc/system/` and assemble to `doc/ctxSYSTEM.md` (`bash doc/system/BUILD.sh`).
 Read that first; the README is a pointer.
 
 ## Common Commands
